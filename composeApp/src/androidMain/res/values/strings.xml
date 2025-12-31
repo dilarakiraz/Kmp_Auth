@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Kmp_Auth</string>
+    
+    <!-- Auth Screen -->
+    <string name="welcome">Hoş Geldiniz</string>
+    <string name="sign_in_subtitle">Devam etmek için giriş yapın</string>
+    <string name="sign_up_subtitle">Hesap oluşturun</string>
+    <string name="email">E-posta</string>
+    <string name="password">Şifre</string>
+    <string name="sign_in">Giriş Yap</string>
+    <string name="sign_up">Kayıt Ol</string>
+    <string name="already_have_account">Zaten hesabınız var mı? Giriş Yap</string>
+    <string name="dont_have_account">Hesabınız yok mu? Kayıt Ol</string>
+    <string name="or">VEYA</string>
+    <string name="sign_in_with_google">Google ile Giriş Yap</string>
+    <string name="sign_in_with_apple">Apple ile Giriş Yap</string>
+</resources>

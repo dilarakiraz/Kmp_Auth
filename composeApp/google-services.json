@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "278521168542",
+    "project_id": "kmpauth-e4a60",
+    "storage_bucket": "kmpauth-e4a60.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:278521168542:android:3020f8f533b0181e91f18f",
+        "android_client_info": {
+          "package_name": "com.dilara.kmp_auth"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDAZ5FB5f1gR90bAjiFzEw2LZbP6YW4Ae4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
