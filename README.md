@@ -2,48 +2,40 @@
 
 Modern ve şık bir kimlik doğrulama uygulaması. Android ve iOS platformlarında çalışan Kotlin Multiplatform tabanlı authentication uygulaması.
 
-## 📱 Demo Video & Screenshots
+## 📱 Demo Video
+
+<div align="center">
+
+[![Watch the video](https://img.shields.io/badge/▶️-Watch%20Demo%20Video-red?style=for-the-badge&logo=youtube)](https://youtube.com/shorts/q_u6Fr0PVb8)
+
+[![KMP Auth Demo](https://img.youtube.com/vi/q_u6Fr0PVb8/0.jpg)](https://youtube.com/shorts/q_u6Fr0PVb8)
+
+[🔗 Video'yu YouTube'da izleyin](https://youtube.com/shorts/q_u6Fr0PVb8)
+
+</div>
+
+## 🖼️ Ekran Görüntüleri
 
 <div align="center">
 
 <table>
-<tr>
-<td align="center" width="50%">
-  
-**🎥 Demo Video**
-
-</td>
-<td align="center" width="50%">
-  
-**📱 Screenshots**
-
-</td>
-</tr>
-<tr>
-<td width="50%" align="center">
-
-<video width="100%" controls autoplay loop muted playsinline style="border-radius: 12px;">
-  <source src="https://github.com/dilarakiraz/Kmp_Auth/releases/download/v1.0.0/demo.mp4" type="video/mp4">
-  Tarayıcınız video etiketini desteklemiyor.
-</video>
-
-</td>
-<td width="50%" align="center">
-
-<img src="docs/screenshots/ios_login.png" alt="iOS Login Screen" width="250"/>
-<br/>
-<strong>Giriş Ekranı</strong>
-<br/><br/>
-<img src="docs/screenshots/ios_register.png" alt="iOS Register Screen" width="250"/>
-<br/>
-<strong>Kayıt Ekranı</strong>
-<br/><br/>
-<img src="docs/screenshots/social_entry.png" alt="Social Login Screen" width="250"/>
-<br/>
-<strong>Sosyal Giriş</strong>
-
-</td>
-</tr>
+  <tr>
+    <td align="center">
+      <img src="docs/screenshots/ios_login.png" alt="iOS Login Screen" width="280" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);"/>
+      <br/><br/>
+      <strong>IOS Giriş Ekranı</strong>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/ios_register.png" alt="iOS Register Screen" width="280" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);"/>
+      <br/><br/>
+      <strong>IOS Kayıt Ekranı</strong>
+    </td>
+    <td align="center">
+      <img src="docs/screenshots/social_entry.png" alt="Social Login Screen" width="280" style="border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);"/>
+      <br/><br/>
+      <strong>IOS Sosyal Giriş</strong>
+    </td>
+  </tr>
 </table>
 
 </div>
