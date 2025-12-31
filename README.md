@@ -1,18 +1,52 @@
-# KMP Auth - Kotlin Multiplatform Authentication App
+# KMP Auth
 
 Modern ve şık bir kimlik doğrulama uygulaması. Android ve iOS platformlarında çalışan Kotlin Multiplatform tabanlı authentication uygulaması.
 
-## 📱 Video Demo
+## 📱 Demo Video & Screenshots
 
 <div align="center">
-  <video src="docs/demo.mp4" width="600" autoplay loop muted playsinline controls style="max-width: 100%; border-radius: 12px;">
-    Tarayıcınız video etiketini desteklemiyor. Video'yu indirmek için <a href="docs/demo.mp4">buraya tıklayın</a>.
-  </video>
-</div>
 
-> **Not:** Video otomatik olarak oynatılacak (sessiz modda). Kontroller ile sesi açabilir veya video'yu duraklatabilirsiniz.
-> 
-> **Alternatif:** Eğer otomatik oynatma çalışmazsa, video'yu YouTube veya Vimeo'ya yükleyip embed edebilirsiniz. Bu daha güvenilir bir yöntemdir.
+<table>
+<tr>
+<td align="center" width="50%">
+  
+**🎥 Demo Video**
+
+</td>
+<td align="center" width="50%">
+  
+**📱 Screenshots**
+
+</td>
+</tr>
+<tr>
+<td width="50%" align="center">
+
+<video width="100%" controls autoplay loop muted playsinline style="border-radius: 12px;">
+  <source src="https://github.com/dilarakiraz/Kmp_Auth/releases/download/v1.0.0/demo.mp4" type="video/mp4">
+  Tarayıcınız video etiketini desteklemiyor.
+</video>
+
+</td>
+<td width="50%" align="center">
+
+<img src="docs/screenshots/ios_login.png" alt="iOS Login Screen" width="250"/>
+<br/>
+<strong>Giriş Ekranı</strong>
+<br/><br/>
+<img src="docs/screenshots/ios_register.png" alt="iOS Register Screen" width="250"/>
+<br/>
+<strong>Kayıt Ekranı</strong>
+<br/><br/>
+<img src="docs/screenshots/social_entry.png" alt="Social Login Screen" width="250"/>
+<br/>
+<strong>Sosyal Giriş</strong>
+
+</td>
+</tr>
+</table>
+
+</div>
 
 ## ✨ Özellikler
 
@@ -23,16 +57,6 @@ Modern ve şık bir kimlik doğrulama uygulaması. Android ve iOS platformların
 - 💾 **Secure Storage** - Güvenli yerel veri saklama
 - 🎨 **Modern UI** - Glassmorphic tasarım ve animasyonlar
 - 📱 **Cross-Platform** - Android ve iOS desteği
-
-## 🖼️ Ekran Görüntüleri
-
-### iOS Screenshots
-
-<div align="center">
-  <img src="docs/screenshots/ios_login.png" alt="iOS Login Screen" width="300"/>
-  <img src="docs/screenshots/ios_register.png" alt="iOS Register Screen" width="300"/>
-  <img src="docs/screenshots/social_entry.png" alt="Social Login Screen" width="300"/>
-</div>
 
 ## 🛠️ Teknolojiler
 
@@ -56,49 +80,38 @@ Modern ve şık bir kimlik doğrulama uygulaması. Android ve iOS platformların
 
 ## 🚀 Kurulum
 
-### Android
+### 1. Repository'yi klonlayın
 
-1. Repository'yi klonlayın:
-   ```bash
-   git clone <repository-url>
-   cd Kmp_Auth
-   ```
+```bash
+git clone https://github.com/dilarakiraz/Kmp_Auth.git
+cd Kmp_Auth
+```
 
-2. Android Studio'da projeyi açın
+### 2. Android Setup
 
-3. Gradle sync yapın
-
-4. Firebase'i yapılandırın:
+1. Android Studio'da projeyi açın
+2. Gradle sync yapın
+3. Firebase'i yapılandırın:
    - `composeApp/google-services.json` dosyasını Firebase Console'dan indirip ekleyin
-
-5. Uygulamayı çalıştırın:
+4. Uygulamayı çalıştırın:
    ```bash
    ./gradlew :composeApp:assembleDebug
    ```
 
-### iOS
+### 3. iOS Setup
 
-1. Repository'yi klonlayın:
-   ```bash
-   git clone <repository-url>
-   cd Kmp_Auth
-   ```
-
-2. Xcode'da projeyi açın:
+1. Xcode'da projeyi açın:
    ```bash
    open iosApp/iosApp.xcworkspace
    ```
-
-3. CocoaPods dependencies yükleyin (gerekirse):
+2. CocoaPods dependencies yükleyin (gerekirse):
    ```bash
    cd iosApp
    pod install
    ```
-
-4. Firebase'i yapılandırın:
+3. Firebase'i yapılandırın:
    - `GoogleService-Info.plist` dosyasını Firebase Console'dan indirip `iosApp/iosApp/` klasörüne ekleyin
-
-5. Xcode'dan uygulamayı çalıştırın
+4. Xcode'dan uygulamayı çalıştırın
 
 ## 📁 Proje Yapısı
 
@@ -116,9 +129,9 @@ Kmp_Auth/
 └── README.md
 ```
 
-## 🔧 Yapılandırma
+## 🔧 Firebase Yapılandırması
 
-### Firebase Setup
+### 1. Firebase Console Setup
 
 1. [Firebase Console](https://console.firebase.google.com/)'a gidin
 2. Yeni bir proje oluşturun
@@ -127,13 +140,12 @@ Kmp_Auth/
    - Google Sign-In provider
    - Apple Sign-In provider (iOS için)
 
-### Android Firebase Setup
+### 2. Android Firebase Setup
 
 1. Firebase Console'da Android app ekleyin
 2. `google-services.json` dosyasını `composeApp/` klasörüne ekleyin
 
-### iOS Firebase Setup
+### 3. iOS Firebase Setup
 
 1. Firebase Console'da iOS app ekleyin
 2. `GoogleService-Info.plist` dosyasını `iosApp/iosApp/` klasörüne ekleyin
-
