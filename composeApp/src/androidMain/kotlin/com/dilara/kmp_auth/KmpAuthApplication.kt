@@ -1,6 +1,7 @@
 package com.dilara.kmp_auth
 
 import android.app.Application
+import com.dilara.kmp_auth.data.remote.GoogleSignInHelper
 import com.google.firebase.FirebaseApp
 
 class KmpAuthApplication : Application() {
@@ -9,6 +10,7 @@ class KmpAuthApplication : Application() {
         if (FirebaseApp.getApps(this).isEmpty()) {
             FirebaseApp.initializeApp(this)
         }
+        GoogleSignInHelper.initialize(this)
     }
 }
 

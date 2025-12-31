@@ -14,4 +14,8 @@
     <string name="or">VEYA</string>
     <string name="sign_in_with_google">Google ile Giriş Yap</string>
     <string name="sign_in_with_apple">Apple ile Giriş Yap</string>
+    
+    <!-- Google Sign-In Web Client ID -->
+    <!-- Firebase Console > Authentication > Sign-in method > Google > Web client ID -->
+    <string name="default_web_client_id">278521168542-drteue7gifnmj7epfbsvj5jccmd02pj6.apps.googleusercontent.com</string>
 </resources>

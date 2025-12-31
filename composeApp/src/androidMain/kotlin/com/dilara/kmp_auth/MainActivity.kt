@@ -1,13 +1,13 @@
 package com.dilara.kmp_auth
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.fragment.app.FragmentActivity
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -16,8 +16,7 @@ class MainActivity : ComponentActivity() {
             if (com.google.firebase.FirebaseApp.getApps(this).isEmpty()) {
                 com.google.firebase.FirebaseApp.initializeApp(this)
             }
-        } catch (e: Exception) {
-            android.util.Log.e("MainActivity", "Firebase initialization error", e)
+        } catch (_: Exception) {
         }
 
         setContent {

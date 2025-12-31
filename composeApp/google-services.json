@@ -12,7 +12,20 @@
           "package_name": "com.dilara.kmp_auth"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "278521168542-v9b2bttemcvi3528hq7e6vc8nkm5lmja.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.dilara.kmp_auth",
+            "certificate_hash": "4f4685dcb0dd9ab3907e08b2a4535f9949a0b2f3"
+          }
+        },
+        {
+          "client_id": "278521168542-drteue7gifnmj7epfbsvj5jccmd02pj6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDAZ5FB5f1gR90bAjiFzEw2LZbP6YW4Ae4"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "278521168542-drteue7gifnmj7epfbsvj5jccmd02pj6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

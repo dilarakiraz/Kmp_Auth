@@ -63,6 +63,8 @@ import com.dilara.kmp_auth.presentation.common.LiquidGlassCard
 import com.dilara.kmp_auth.presentation.common.PasswordIcons.Visibility
 import com.dilara.kmp_auth.presentation.common.PasswordIcons.VisibilityOff
 import com.dilara.kmp_auth.presentation.common.StaticModernBackground
+import com.dilara.kmp_auth.presentation.common.rememberBiometricHelper
+import com.dilara.kmp_auth.presentation.common.FingerprintIcon
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -71,6 +73,7 @@ fun AuthScreen(
     modifier: Modifier = Modifier
 ) {
     val state by viewModel.state.collectAsState()
+    var shouldLaunchGoogleSignIn by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.effect.collect { effect ->
@@ -89,6 +92,14 @@ fun AuthScreen(
             }
         }
     }
+    
+    HandleGoogleSignIn(
+        shouldLaunch = shouldLaunchGoogleSignIn,
+        onResult = { result ->
+            shouldLaunchGoogleSignIn = false
+            viewModel.handleGoogleSignInResult(result)
+        }
+    )
 
     AuthScreenContent(
         state = state,
@@ -96,8 +107,12 @@ fun AuthScreen(
         onPasswordChange = { viewModel.updatePassword(it) },
         onSignInWithEmail = { viewModel.handleEvent(AuthEvent.SignInWithEmail(state.email, state.password)) },
         onSignUpWithEmail = { viewModel.handleEvent(AuthEvent.SignUpWithEmail(state.email, state.password)) },
-        onSignInWithGoogle = { viewModel.handleEvent(AuthEvent.SignInWithGoogle) },
+        onSignInWithGoogle = { 
+            viewModel.handleEvent(AuthEvent.SignInWithGoogle)
+            shouldLaunchGoogleSignIn = true
+        },
         onSignInWithApple = { viewModel.handleEvent(AuthEvent.SignInWithApple) },
+        onSignInWithBiometric = { viewModel.handleEvent(AuthEvent.SignInWithBiometric) },
         onToggleAuthMode = { viewModel.handleEvent(AuthEvent.ToggleAuthMode) },
         onTogglePasswordVisibility = { viewModel.handleEvent(AuthEvent.TogglePasswordVisibility) },
         onShowSocialSheet = { viewModel.handleEvent(AuthEvent.ShowSocialSheet) },
@@ -115,12 +130,15 @@ private fun AuthScreenContent(
     onSignUpWithEmail: () -> Unit,
     onSignInWithGoogle: () -> Unit,
     onSignInWithApple: () -> Unit,
+    onSignInWithBiometric: () -> Unit,
     onToggleAuthMode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
     onShowSocialSheet: () -> Unit,
     onHideSocialSheet: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val biometricHelper = rememberBiometricHelper()
+    val isBiometricAvailable = remember { biometricHelper.isBiometricAvailable() }
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
@@ -287,6 +305,53 @@ private fun AuthScreenContent(
                         }
                     }
 
+                    if (!state.isSignUpMode && isBiometricAvailable) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(1.dp)
+                                    .background(Color.White.copy(alpha = 0.3f))
+                            )
+                            
+                            Text(
+                                text = "VEYA",
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = Color.White.copy(alpha = 0.6f),
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                modifier = Modifier.padding(horizontal = 8.dp)
+                            )
+                            
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height(1.dp)
+                                    .background(Color.White.copy(alpha = 0.3f))
+                            )
+                        }
+                        
+                        BiometricButton(
+                            onClick = {
+                                biometricHelper.authenticate(
+                                    title = "Parmak İzi ile Giriş",
+                                    subtitle = "Parmak izinizi kullanarak giriş yapın",
+                                    onSuccess = {
+                                        onSignInWithBiometric()
+                                    },
+                                    onError = { error ->
+                                    }
+                                )
+                            },
+                            enabled = !state.isLoading,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+
                     TextButton(
                         onClick = onToggleAuthMode,
                         enabled = !state.isLoading
@@ -322,6 +387,23 @@ private fun AuthScreenContent(
             onShowSocialSheet = onShowSocialSheet,
             enabled = !state.isLoading
         )
+        
+        if (!state.isSignUpMode && isBiometricAvailable) {
+            BiometricFloatingButton(
+                onClick = {
+                    biometricHelper.authenticate(
+                        title = "Parmak İzi ile Giriş",
+                        subtitle = "Parmak izinizi kullanarak giriş yapın",
+                        onSuccess = {
+                            onSignInWithBiometric()
+                        },
+                        onError = { error ->
+                        }
+                    )
+                },
+                enabled = !state.isLoading
+            )
+        }
 
         GlassSheet(
             visible = state.showSocialSheet,
@@ -444,6 +526,84 @@ private fun SocialLoginButton(
 }
 
 @Composable
+private fun BiometricButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier
+) {
+    val alpha by animateFloatAsState(
+        targetValue = if (enabled) 1f else 0.5f,
+        animationSpec = tween(durationMillis = 200),
+        label = "biometric_button_alpha"
+    )
+
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+            .height(56.dp)
+            .alpha(alpha),
+        shape = RoundedCornerShape(20.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = Color.White.copy(alpha = 0.2f),
+            disabledContainerColor = Color.White.copy(alpha = 0.1f)
+        ),
+        elevation = ButtonDefaults.buttonElevation(
+            defaultElevation = 0.dp,
+            pressedElevation = 4.dp
+        )
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Icon(
+                imageVector = FingerprintIcon.Default,
+                contentDescription = "Parmak İzi ile Giriş",
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
+            )
+            Text(
+                text = "Parmak İzi ile Giriş",
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.White
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun BiometricFloatingButton(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier
+) {
+    Box(modifier = modifier.fillMaxSize()) {
+        FloatingActionButton(
+            onClick = onClick,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp),
+            containerColor = Color.White.copy(alpha = 0.2f),
+            shape = CircleShape,
+            elevation = FloatingActionButtonDefaults.elevation(
+                defaultElevation = 0.dp,
+                pressedElevation = 2.dp
+            )
+        ) {
+            Icon(
+                imageVector = FingerprintIcon.Default,
+                contentDescription = "Parmak İzi ile Giriş",
+                tint = Color.White,
+                modifier = Modifier.size(28.dp)
+            )
+        }
+    }
+}
+
+@Composable
 fun GlassmorphicButton(
     text: String,
     onClick: () -> Unit,
@@ -504,6 +664,7 @@ private fun AuthScreenPreview() {
             onSignUpWithEmail = { },
             onSignInWithGoogle = { },
             onSignInWithApple = { },
+            onSignInWithBiometric = { },
             onToggleAuthMode = { },
             onTogglePasswordVisibility = { },
             onShowSocialSheet = { },
@@ -534,6 +695,7 @@ private fun AuthScreenLoadingPreview() {
             onSignUpWithEmail = { },
             onSignInWithGoogle = { },
             onSignInWithApple = { },
+            onSignInWithBiometric = { },
             onToggleAuthMode = { },
             onTogglePasswordVisibility = { },
             onShowSocialSheet = { },
@@ -564,6 +726,7 @@ private fun AuthScreenErrorPreview() {
             onSignUpWithEmail = { },
             onSignInWithGoogle = { },
             onSignInWithApple = { },
+            onSignInWithBiometric = { },
             onToggleAuthMode = { },
             onTogglePasswordVisibility = { },
             onShowSocialSheet = { },
@@ -594,6 +757,7 @@ private fun AuthScreenSignUpPreview() {
             onSignUpWithEmail = { },
             onSignInWithGoogle = { },
             onSignInWithApple = { },
+            onSignInWithBiometric = { },
             onToggleAuthMode = { },
             onTogglePasswordVisibility = { },
             onShowSocialSheet = { },

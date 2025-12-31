@@ -5,6 +5,7 @@ sealed class AuthEvent {
     data class SignUpWithEmail(val email: String, val password: String) : AuthEvent()
     object SignInWithGoogle : AuthEvent()
     object SignInWithApple : AuthEvent()
+    object SignInWithBiometric : AuthEvent()
     object SignOut : AuthEvent()
     object ClearError : AuthEvent()
     object ToggleAuthMode : AuthEvent()

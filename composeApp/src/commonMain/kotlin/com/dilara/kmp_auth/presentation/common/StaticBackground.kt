@@ -49,9 +49,9 @@ fun StaticModernBackground(
 private fun DrawScope.drawStaticDotsPattern(size: androidx.compose.ui.geometry.Size) {
     val dotSize = 3f
     val spacing = 50f
-    val dotColor = Color(0xFF3B82F6).copy(alpha = 0.25f) // Increased from 0.12f
-    val dotColor2 = Color(0xFF6366F1).copy(alpha = 0.22f) // Increased from 0.1f
-    val dotColor3 = Color(0xFF06B6D4).copy(alpha = 0.2f) // Added third color for variety
+    val dotColor = Color(0xFF3B82F6).copy(alpha = 0.25f) 
+    val dotColor2 = Color(0xFF6366F1).copy(alpha = 0.22f) 
+    val dotColor3 = Color(0xFF06B6D4).copy(alpha = 0.2f)
     
     var y = 0f
     var row = 0
@@ -84,7 +84,7 @@ private fun DrawScope.drawStaticDotsPattern(size: androidx.compose.ui.geometry.S
  */
 private fun DrawScope.drawStaticGridPattern(size: androidx.compose.ui.geometry.Size) {
     val gridSize = 100f
-    val gridColor = Color(0xFF1E3A8A).copy(alpha = 0.12f) // Increased from 0.06f
+    val gridColor = Color(0xFF1E3A8A).copy(alpha = 0.12f)
     
     var x = 0f
     while (x < size.width) {
@@ -92,7 +92,7 @@ private fun DrawScope.drawStaticGridPattern(size: androidx.compose.ui.geometry.S
             color = gridColor,
             start = Offset(x, 0f),
             end = Offset(x, size.height),
-            strokeWidth = 1f // Increased from 0.5f
+            strokeWidth = 1f
         )
         x += gridSize
     }
@@ -103,12 +103,12 @@ private fun DrawScope.drawStaticGridPattern(size: androidx.compose.ui.geometry.S
             color = gridColor,
             start = Offset(0f, y),
             end = Offset(size.width, y),
-            strokeWidth = 1f // Increased from 0.5f
+            strokeWidth = 1f 
         )
         y += gridSize
     }
     
-    val diagonalColor = Color(0xFF3B82F6).copy(alpha = 0.15f) // Increased from 0.05f
+    val diagonalColor = Color(0xFF3B82F6).copy(alpha = 0.15f)
     val diagonalSpacing = 120f
     
     var diagonalX = -size.height
@@ -117,12 +117,11 @@ private fun DrawScope.drawStaticGridPattern(size: androidx.compose.ui.geometry.S
             color = diagonalColor,
             start = Offset(diagonalX, 0f),
             end = Offset(diagonalX + size.height, size.height),
-            strokeWidth = 1.5f // Increased from 1f
+            strokeWidth = 1.5f 
         )
         diagonalX += diagonalSpacing
     }
     
-    // Additional subtle diagonal lines in opposite direction
     val diagonalColor2 = Color(0xFF6366F1).copy(alpha = 0.1f)
     var diagonalX2 = size.width + size.height
     while (diagonalX2 > -size.height) {

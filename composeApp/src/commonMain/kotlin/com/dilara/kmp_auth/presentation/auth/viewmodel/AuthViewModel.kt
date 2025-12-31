@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -52,12 +53,14 @@ class AuthViewModel(
             is AuthEvent.SignInWithEmail -> signInWithEmail(event.email, event.password)
             is AuthEvent.SignUpWithEmail -> signUpWithEmail(event.email, event.password)
             is AuthEvent.SignInWithGoogle -> {
-                _state.update { it.copy(showSocialSheet = false) }
-                signInWithGoogle()
+                _state.update { it.copy(showSocialSheet = false, isLoading = true, errorMessage = null) }
             }
             is AuthEvent.SignInWithApple -> {
                 _state.update { it.copy(showSocialSheet = false) }
                 signInWithApple()
+            }
+            is AuthEvent.SignInWithBiometric -> {
+                signInWithBiometric()
             }
             is AuthEvent.SignOut -> signOut()
             is AuthEvent.ClearError -> clearError()
@@ -65,6 +68,21 @@ class AuthViewModel(
             is AuthEvent.TogglePasswordVisibility -> togglePasswordVisibility()
             is AuthEvent.ShowSocialSheet -> _state.update { it.copy(showSocialSheet = true) }
             is AuthEvent.HideSocialSheet -> _state.update { it.copy(showSocialSheet = false) }
+        }
+    }
+    
+    fun handleGoogleSignInResult(result: AuthResult) {
+        viewModelScope.launch {
+            when (result) {
+                is AuthResult.Success -> {
+                    _state.update { it.copy(isLoading = false, currentUser = result.user) }
+                    _effect.emit(AuthEffect.NavigateToHome)
+                }
+                is AuthResult.Error -> {
+                    _state.update { it.copy(isLoading = false, errorMessage = result.message) }
+                    _effect.emit(AuthEffect.ShowError(result.message))
+                }
+            }
         }
     }
     
@@ -178,6 +196,25 @@ class AuthViewModel(
 
     private fun clearError() {
         _state.update { it.copy(errorMessage = null) }
+    }
+
+    private fun signInWithBiometric() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true, errorMessage = null) }
+            val currentUser = getCurrentUserUseCase().first()
+            if (currentUser != null) {
+                _state.update { it.copy(isLoading = false, currentUser = currentUser) }
+                _effect.emit(AuthEffect.NavigateToHome)
+            } else {
+                _state.update {
+                    it.copy(
+                        isLoading = false, 
+                        errorMessage = "Önce email/şifre ile giriş yapmalısınız"
+                    ) 
+                }
+                _effect.emit(AuthEffect.ShowError("Önce email/şifre ile giriş yapmalısınız"))
+            }
+        }
     }
 }
 
