@@ -14,11 +14,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
-/**
- * Liquid Glass Card with AGSL shader effect (Android) or fallback (iOS)
- * Creates a premium liquid glass effect with dynamic shader animations
- * Based on: https://www.linkedin.com/posts/jorgecastillopr_liquid-glass-shader-in-jetpack-compose-using-activity-7411436934025203712-u7A-
- */
 @Composable
 fun LiquidGlassCard(
     modifier: Modifier = Modifier,

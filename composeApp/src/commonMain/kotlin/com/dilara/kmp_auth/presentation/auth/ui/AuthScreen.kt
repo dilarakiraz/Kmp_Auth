@@ -2,14 +2,6 @@ package com.dilara.kmp_auth.presentation.auth.ui
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,23 +13,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Login
-import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -48,23 +33,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dilara.kmp_auth.presentation.auth.viewmodel.AuthViewModel
+import com.dilara.kmp_auth.presentation.common.CardAnimations
+import com.dilara.kmp_auth.presentation.common.ContentAnimations
+import com.dilara.kmp_auth.presentation.common.FingerprintIcon
+import com.dilara.kmp_auth.presentation.common.GlassButtonStyles
 import com.dilara.kmp_auth.presentation.common.GlassSheet
-import com.dilara.kmp_auth.presentation.common.LiquidGlassCard
+import com.dilara.kmp_auth.presentation.common.GlassTextField
+import com.dilara.kmp_auth.presentation.common.GlassTextFieldStyles
+import com.dilara.kmp_auth.presentation.common.InputIcons
 import com.dilara.kmp_auth.presentation.common.PasswordIcons.Visibility
 import com.dilara.kmp_auth.presentation.common.PasswordIcons.VisibilityOff
+import com.dilara.kmp_auth.presentation.common.SocialIcons
 import com.dilara.kmp_auth.presentation.common.StaticModernBackground
+import com.dilara.kmp_auth.presentation.common.SwipeableCard
+import com.dilara.kmp_auth.presentation.common.fabButtonElevation
+import com.dilara.kmp_auth.presentation.common.glassButtonAlpha
+import com.dilara.kmp_auth.presentation.common.isIOS
+import com.dilara.kmp_auth.presentation.common.primaryButtonColors
+import com.dilara.kmp_auth.presentation.common.primaryButtonElevation
 import com.dilara.kmp_auth.presentation.common.rememberBiometricHelper
-import com.dilara.kmp_auth.presentation.common.FingerprintIcon
+import com.dilara.kmp_auth.presentation.common.secondaryButtonColors
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -76,21 +70,7 @@ fun AuthScreen(
     var shouldLaunchGoogleSignIn by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        viewModel.effect.collect { effect ->
-            when (effect) {
-                is AuthEffect.ShowError -> {
-                    // Error is already shown in state
-                }
-
-                is AuthEffect.NavigateToHome -> {
-                    // Navigation will be handled by parent
-                }
-
-                is AuthEffect.NavigateToLogin -> {
-                    // Navigation will be handled by parent
-                }
-            }
-        }
+        viewModel.effect.collect { }
     }
     
     HandleGoogleSignIn(
@@ -153,18 +133,12 @@ private fun AuthScreenContent(
 
         AnimatedVisibility(
             visible = cardVisible,
-            enter = fadeIn(animationSpec = tween(800)) +
-                    slideInVertically(
-                        initialOffsetY = { it / 2 },
-                        animationSpec = tween(800, easing = FastOutSlowInEasing)
-                    ),
-            exit = fadeOut() + slideOutVertically()
+            enter = CardAnimations.entrance,
+            exit = CardAnimations.exit
         ) {
-            LiquidGlassCard(
+            SwipeableCard(
+                onSwipe = onToggleAuthMode,
                 modifier = Modifier
-                    .fillMaxWidth(0.9f)
-                    .padding(horizontal = 20.dp, vertical = 16.dp),
-                intensity = 1.2f
             ) {
                 Column(
                     modifier = Modifier
@@ -175,18 +149,7 @@ private fun AuthScreenContent(
                 ) {
                     AnimatedContent(
                         targetState = state.isSignUpMode,
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(300)) +
-                                    slideInVertically(
-                                        initialOffsetY = { -it / 2 },
-                                        animationSpec = tween(300)
-                                    ) togetherWith
-                                    fadeOut(animationSpec = tween(300)) +
-                                    slideOutVertically(
-                                        targetOffsetY = { it / 2 },
-                                        animationSpec = tween(300)
-                                    )
-                        },
+                        transitionSpec = { ContentAnimations.fadeSlideUp },
                         label = "auth_mode_transition"
                     ) { isSignUp ->
                         Column(
@@ -214,86 +177,38 @@ private fun AuthScreenContent(
 
                     AnimatedContent(
                         targetState = state.isSignUpMode,
-                        transitionSpec = {
-                            fadeIn(animationSpec = tween(300)) +
-                                    slideInVertically(
-                                        initialOffsetY = { it / 4 },
-                                        animationSpec = tween(300)
-                                    ) togetherWith
-                                    fadeOut(animationSpec = tween(300)) +
-                                    slideOutVertically(
-                                        targetOffsetY = { -it / 4 },
-                                        animationSpec = tween(300)
-                                    )
-                        },
+                        transitionSpec = { ContentAnimations.fadeSlideDown },
                         label = "input_fields_transition"
                     ) { isSignUp ->
                         Column(
                             verticalArrangement = Arrangement.spacedBy(16.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            OutlinedTextField(
+                            GlassTextField(
                                 value = state.email,
                                 onValueChange = onEmailChange,
-                                label = { Text("E-posta", color = Color.White.copy(alpha = 0.7f)) },
-                                modifier = Modifier.fillMaxWidth(),
+                                label = "E-posta",
                                 enabled = !state.isLoading,
-                                singleLine = true,
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Email
-                                ),
-                                colors = TextFieldDefaults.colors(
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White,
-                                    focusedContainerColor = Color.White.copy(alpha = 0.1f),
-                                    unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
-                                    focusedIndicatorColor = Color.White.copy(alpha = 0.6f),
-                                    unfocusedIndicatorColor = Color.White.copy(alpha = 0.3f),
-                                    focusedLabelColor = Color.White.copy(alpha = 0.9f),
-                                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f)
-                                ),
-                                shape = RoundedCornerShape(16.dp)
+                                leadingIcon = { InputIcons.Email() }
                             )
 
-                            OutlinedTextField(
+                            GlassTextField(
                                 value = state.password,
                                 onValueChange = onPasswordChange,
-                                label = { Text("Şifre", color = Color.White.copy(alpha = 0.7f)) },
-                                modifier = Modifier.fillMaxWidth(),
+                                label = "Şifre",
                                 enabled = !state.isLoading,
-                                singleLine = true,
-                                visualTransformation = if (state.isPasswordVisible) {
-                                    VisualTransformation.None
-                                } else {
-                                    PasswordVisualTransformation()
-                                },
+                                leadingIcon = { InputIcons.Password() },
+                                isPassword = true,
+                                isPasswordVisible = state.isPasswordVisible,
                                 trailingIcon = {
                                     IconButton(onClick = onTogglePasswordVisibility) {
                                         Icon(
-                                            imageVector = if (state.isPasswordVisible) {
-                                                VisibilityOff
-                                            } else {
-                                                Visibility
-                                            },
+                                            imageVector = if (state.isPasswordVisible) VisibilityOff else Visibility,
                                             contentDescription = if (state.isPasswordVisible) "Şifreyi gizle" else "Şifreyi göster",
-                                            tint = Color.White.copy(alpha = 0.7f)
+                                            tint = GlassTextFieldStyles.textColor
                                         )
                                     }
-                                },
-                                keyboardOptions = KeyboardOptions(
-                                    keyboardType = KeyboardType.Password
-                                ),
-                                colors = TextFieldDefaults.colors(
-                                    focusedTextColor = Color.White,
-                                    unfocusedTextColor = Color.White,
-                                    focusedContainerColor = Color.White.copy(alpha = 0.1f),
-                                    unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
-                                    focusedIndicatorColor = Color.White.copy(alpha = 0.6f),
-                                    unfocusedIndicatorColor = Color.White.copy(alpha = 0.3f),
-                                    focusedLabelColor = Color.White.copy(alpha = 0.9f),
-                                    unfocusedLabelColor = Color.White.copy(alpha = 0.7f)
-                                ),
-                                shape = RoundedCornerShape(16.dp)
+                                }
                             )
 
                             GlassmorphicButton(
@@ -437,16 +352,19 @@ private fun AuthScreenContent(
                     modifier = Modifier.fillMaxWidth()
                 )
 
-                SocialLoginButton(
-                    text = "Apple ile Devam Et",
-                    onClick = {
-                        onSignInWithApple()
-                        onHideSocialSheet()
-                    },
-                    icon = "A",
-                    enabled = !state.isLoading,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                val isIOS = remember { isIOS() }
+                if (isIOS) {
+                    SocialLoginButton(
+                        text = "Apple ile Devam Et",
+                        onClick = {
+                            onSignInWithApple()
+                            onHideSocialSheet()
+                        },
+                        icon = "A",
+                        enabled = !state.isLoading,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
             }
         }
     }
@@ -464,12 +382,9 @@ private fun FloatingSocialIcons(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(24.dp),
-            containerColor = Color.White.copy(alpha = 0.2f),
-            shape = CircleShape,
-            elevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp,
-                pressedElevation = 2.dp
-            )
+            containerColor = GlassButtonStyles.fabContainerColor,
+            shape = GlassButtonStyles.fabShape,
+            elevation = fabButtonElevation()
         ) {
             Icon(
                 imageVector = Icons.Default.Login,
@@ -493,26 +408,23 @@ private fun SocialLoginButton(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(20.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White.copy(alpha = 0.2f),
-            disabledContainerColor = Color.White.copy(alpha = 0.1f)
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 4.dp
-        )
+        shape = GlassButtonStyles.secondaryShape,
+        colors = secondaryButtonColors(),
+        elevation = primaryButtonElevation()
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(
-                text = icon,
-                style = MaterialTheme.typography.titleLarge.copy(
-                    fontWeight = FontWeight.Bold,
-                    color = Color.White
-                )
+            Icon(
+                painter = when (icon) {
+                    "G" -> SocialIcons.Google()
+                    "A" -> SocialIcons.Apple()
+                    else -> SocialIcons.Google()
+                },
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(24.dp)
             )
             Text(
                 text = text,
@@ -531,27 +443,15 @@ private fun BiometricButton(
     enabled: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val alpha by animateFloatAsState(
-        targetValue = if (enabled) 1f else 0.5f,
-        animationSpec = tween(durationMillis = 200),
-        label = "biometric_button_alpha"
-    )
-
     Button(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier
             .height(56.dp)
-            .alpha(alpha),
-        shape = RoundedCornerShape(20.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White.copy(alpha = 0.2f),
-            disabledContainerColor = Color.White.copy(alpha = 0.1f)
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 4.dp
-        )
+            .glassButtonAlpha(enabled),
+        shape = GlassButtonStyles.secondaryShape,
+        colors = secondaryButtonColors(),
+        elevation = primaryButtonElevation()
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -586,12 +486,9 @@ private fun BiometricFloatingButton(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
                 .padding(24.dp),
-            containerColor = Color.White.copy(alpha = 0.2f),
-            shape = CircleShape,
-            elevation = FloatingActionButtonDefaults.elevation(
-                defaultElevation = 0.dp,
-                pressedElevation = 2.dp
-            )
+            containerColor = GlassButtonStyles.fabContainerColor,
+            shape = GlassButtonStyles.fabShape,
+            elevation = fabButtonElevation()
         ) {
             Icon(
                 imageVector = FingerprintIcon.Default,
@@ -610,27 +507,15 @@ fun GlassmorphicButton(
     enabled: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val alpha by animateFloatAsState(
-        targetValue = if (enabled) 1f else 0.5f,
-        animationSpec = tween(durationMillis = 200),
-        label = "button_alpha"
-    )
-
     Button(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier
             .height(50.dp)
-            .alpha(alpha),
-        shape = RoundedCornerShape(24.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White.copy(alpha = 0.15f),
-            disabledContainerColor = Color.White.copy(alpha = 0.05f)
-        ),
-        elevation = ButtonDefaults.buttonElevation(
-            defaultElevation = 0.dp,
-            pressedElevation = 4.dp
-        )
+            .glassButtonAlpha(enabled),
+        shape = GlassButtonStyles.primaryShape,
+        colors = primaryButtonColors(),
+        elevation = primaryButtonElevation()
     ) {
         Text(
             text = text,

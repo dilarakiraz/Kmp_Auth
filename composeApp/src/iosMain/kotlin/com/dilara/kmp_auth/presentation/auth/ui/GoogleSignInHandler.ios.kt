@@ -11,11 +11,13 @@ actual fun HandleGoogleSignIn(
 ) {
     LaunchedEffect(shouldLaunch) {
         if (shouldLaunch) {
-            AuthResult.Error(
-                "iOS'ta Google Sign-In henüz tam olarak uygulanmadı. " +
-                        "iOS için Google Sign-In eklemek için Firebase iOS SDK ve Google Sign-In SDK'nın " +
-                        "native interop ile entegre edilmesi gerekiyor. " +
-                        "Şimdilik Android'de çalışmaktadır."
+            // iOS Google Sign-In şimdilik desteklenmiyor
+            // Sadece Android'de çalışmaktadır
+            onResult(
+                AuthResult.Error(
+                    "iOS'ta Google Sign-In şu anda desteklenmiyor. " +
+                    "Sadece Android platformunda çalışmaktadır."
+                )
             )
         }
     }

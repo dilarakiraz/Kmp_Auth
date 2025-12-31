@@ -66,7 +66,6 @@ private fun HomeScreenContent(
     ) {
         com.dilara.kmp_auth.presentation.common.StaticModernBackground()
         
-        // Content overlay
         AnimatedVisibility(
             visible = cardVisible,
             enter = fadeIn(animationSpec = tween(800)) +

@@ -11,11 +11,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 
-/**
- * Static modern background pattern
- * Clean, modern pattern without distracting animations
- * Perfect for iOS and makes glass effects visible
- */
 @Composable
 fun StaticModernBackground(
     modifier: Modifier = Modifier
@@ -43,9 +38,6 @@ fun StaticModernBackground(
     }
 }
 
-/**
- * Static dots pattern - clean and modern
- */
 private fun DrawScope.drawStaticDotsPattern(size: androidx.compose.ui.geometry.Size) {
     val dotSize = 3f
     val spacing = 50f
@@ -79,9 +71,6 @@ private fun DrawScope.drawStaticDotsPattern(size: androidx.compose.ui.geometry.S
     }
 }
 
-/**
- * Static grid pattern - subtle texture
- */
 private fun DrawScope.drawStaticGridPattern(size: androidx.compose.ui.geometry.Size) {
     val gridSize = 100f
     val gridColor = Color(0xFF1E3A8A).copy(alpha = 0.12f)
