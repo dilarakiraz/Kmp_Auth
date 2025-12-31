@@ -32,6 +32,7 @@ kotlin {
             implementation(libs.androidx.activity.compose)
             implementation("com.google.android.gms:play-services-auth:21.2.0")
             implementation("androidx.biometric:biometric:1.1.0")
+            implementation("androidx.security:security-crypto:1.1.0-alpha06")
         }
         iosMain.dependencies {
             // Firebase iOS SDK will be added via CocoaPods or SPM

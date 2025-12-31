@@ -1,6 +1,8 @@
 package com.dilara.kmp_auth.presentation.common
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -38,18 +40,31 @@ fun GlassSheet(
         visible = visible,
         enter = slideInVertically(
             initialOffsetY = { it },
-            animationSpec = tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-        ) + fadeIn(animationSpec = tween(400)),
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            )
+        ) + fadeIn(
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessMedium
+            )
+        ),
         exit = slideOutVertically(
             targetOffsetY = { it },
-            animationSpec = tween(400, easing = androidx.compose.animation.core.FastOutSlowInEasing)
-        ) + fadeOut(animationSpec = tween(400)),
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioHighBouncy,
+                stiffness = Spring.StiffnessMedium
+            )
+        ) + fadeOut(
+            animationSpec = tween(300)
+        ),
         modifier = modifier.zIndex(1000f)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Black.copy(alpha = 0.3f))
+                .background(Color.Black.copy(alpha = 0.7f))
                 .clickable(onClick = onDismiss)
         ) {
             Column(
@@ -60,18 +75,18 @@ fun GlassSheet(
                     .background(
                         brush = Brush.verticalGradient(
                             colors = listOf(
-                                Color.White.copy(alpha = 0.25f),
-                                Color.White.copy(alpha = 0.15f),
-                                Color.White.copy(alpha = 0.2f)
+                                Color.White.copy(alpha = 0.6f),
+                                Color.White.copy(alpha = 0.5f),
+                                Color.White.copy(alpha = 0.55f)
                             )
                         )
                     )
                     .border(
-                        width = 1.dp,
+                        width = 2.dp,
                         brush = Brush.linearGradient(
                             colors = listOf(
-                                Color.White.copy(alpha = 0.4f),
-                                Color.White.copy(alpha = 0.2f)
+                                Color.White.copy(alpha = 0.8f),
+                                Color.White.copy(alpha = 0.6f)
                             )
                         ),
                         shape = RoundedCornerShape(topStart = 32.dp, topEnd = 32.dp)
@@ -85,7 +100,7 @@ fun GlassSheet(
                         .width(40.dp)
                         .height(4.dp)
                         .clip(RoundedCornerShape(2.dp))
-                        .background(Color.White.copy(alpha = 0.5f))
+                        .background(Color.White.copy(alpha = 0.9f))
                 )
                 
                 content()

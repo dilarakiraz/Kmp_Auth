@@ -2,7 +2,18 @@ package com.dilara.kmp_auth.presentation.auth.ui
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +25,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Login
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -35,6 +48,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -52,13 +68,16 @@ import com.dilara.kmp_auth.presentation.common.PasswordIcons.VisibilityOff
 import com.dilara.kmp_auth.presentation.common.SocialIcons
 import com.dilara.kmp_auth.presentation.common.StaticModernBackground
 import com.dilara.kmp_auth.presentation.common.SwipeableCard
+import com.dilara.kmp_auth.presentation.common.ToastMessage
 import com.dilara.kmp_auth.presentation.common.fabButtonElevation
+import com.dilara.kmp_auth.presentation.common.getContext
 import com.dilara.kmp_auth.presentation.common.glassButtonAlpha
 import com.dilara.kmp_auth.presentation.common.isIOS
 import com.dilara.kmp_auth.presentation.common.primaryButtonColors
 import com.dilara.kmp_auth.presentation.common.primaryButtonElevation
 import com.dilara.kmp_auth.presentation.common.rememberBiometricHelper
 import com.dilara.kmp_auth.presentation.common.secondaryButtonColors
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -66,13 +85,26 @@ fun AuthScreen(
     viewModel: AuthViewModel,
     modifier: Modifier = Modifier
 ) {
+    val context = getContext()
     val state by viewModel.state.collectAsState()
     var shouldLaunchGoogleSignIn by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.effect.collect { }
+    LaunchedEffect(context) {
+        context?.let {
+            viewModel.setContext(it)
+        }
     }
-    
+
+    LaunchedEffect(Unit) {
+        viewModel.effect.collect { effect ->
+            when (effect) {
+                is AuthEffect.ShowError -> {}
+                is AuthEffect.NavigateToHome -> {}
+                is AuthEffect.NavigateToLogin -> {}
+            }
+        }
+    }
+
     HandleGoogleSignIn(
         shouldLaunch = shouldLaunchGoogleSignIn,
         onResult = { result ->
@@ -87,7 +119,7 @@ fun AuthScreen(
         onPasswordChange = { viewModel.updatePassword(it) },
         onSignInWithEmail = { viewModel.handleEvent(AuthEvent.SignInWithEmail(state.email, state.password)) },
         onSignUpWithEmail = { viewModel.handleEvent(AuthEvent.SignUpWithEmail(state.email, state.password)) },
-        onSignInWithGoogle = { 
+        onSignInWithGoogle = {
             viewModel.handleEvent(AuthEvent.SignInWithGoogle)
             shouldLaunchGoogleSignIn = true
         },
@@ -95,8 +127,14 @@ fun AuthScreen(
         onSignInWithBiometric = { viewModel.handleEvent(AuthEvent.SignInWithBiometric) },
         onToggleAuthMode = { viewModel.handleEvent(AuthEvent.ToggleAuthMode) },
         onTogglePasswordVisibility = { viewModel.handleEvent(AuthEvent.TogglePasswordVisibility) },
+        onToggleRememberMe = { viewModel.handleEvent(AuthEvent.ToggleRememberMe) },
         onShowSocialSheet = { viewModel.handleEvent(AuthEvent.ShowSocialSheet) },
         onHideSocialSheet = { viewModel.handleEvent(AuthEvent.HideSocialSheet) },
+        onShowForgotPassword = { viewModel.handleEvent(AuthEvent.ShowForgotPassword) },
+        onHideForgotPassword = { viewModel.handleEvent(AuthEvent.HideForgotPassword) },
+        onSendPasswordReset = { email -> viewModel.handleEvent(AuthEvent.SendPasswordReset(email)) },
+        onSendEmailVerification = { viewModel.handleEvent(AuthEvent.SendEmailVerification) },
+        onClearError = { viewModel.handleEvent(AuthEvent.ClearError) },
         modifier = modifier
     )
 }
@@ -113,17 +151,50 @@ private fun AuthScreenContent(
     onSignInWithBiometric: () -> Unit,
     onToggleAuthMode: () -> Unit,
     onTogglePasswordVisibility: () -> Unit,
+    onToggleRememberMe: () -> Unit,
     onShowSocialSheet: () -> Unit,
     onHideSocialSheet: () -> Unit,
+    onShowForgotPassword: () -> Unit,
+    onHideForgotPassword: () -> Unit,
+    onSendPasswordReset: (String) -> Unit,
+    onSendEmailVerification: () -> Unit,
+    onClearError: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val biometricHelper = rememberBiometricHelper()
-    val isBiometricAvailable = remember { biometricHelper.isBiometricAvailable() }
+    var isBiometricAvailable by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit, state.isSignUpMode) {
+        if (!state.isSignUpMode) {
+            isBiometricAvailable = biometricHelper.isBiometricAvailable()
+        } else {
+            isBiometricAvailable = false
+        }
+    }
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         StaticModernBackground()
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+        ) {
+            state.errorMessage?.let { message ->
+                val isError = !message.contains("gönderildi", ignoreCase = true) &&
+                        !message.contains("başarılı", ignoreCase = true)
+                ToastMessage(
+                    message = message,
+                    isError = isError,
+                    onHide = onClearError,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 16.dp)
+                )
+            }
+        }
 
         var cardVisible by remember { mutableStateOf(false) }
 
@@ -211,61 +282,77 @@ private fun AuthScreenContent(
                                 }
                             )
 
+                            if (!isSignUp) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.pointerInput(Unit) {
+                                            detectTapGestures {
+                                                onToggleRememberMe()
+                                            }
+                                        }
+                                    ) {
+                                        Checkbox(
+                                            checked = state.rememberMe,
+                                            onCheckedChange = { onToggleRememberMe() },
+                                            colors = CheckboxDefaults.colors(
+                                                checkedColor = Color.White,
+                                                uncheckedColor = Color.White.copy(alpha = 0.7f)
+                                            )
+                                        )
+                                        Text(
+                                            text = "Beni Hatırla",
+                                            color = Color.White.copy(alpha = 0.8f),
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+
+                                    TextButton(
+                                        onClick = onShowForgotPassword,
+                                        enabled = !state.isLoading
+                                    ) {
+                                        Text(
+                                            text = "Şifremi Unuttum",
+                                            color = Color.White.copy(alpha = 0.8f),
+                                            style = MaterialTheme.typography.bodySmall
+                                        )
+                                    }
+                                }
+                            }
+
                             GlassmorphicButton(
                                 text = if (isSignUp) "Kayıt Ol" else "Giriş Yap",
                                 onClick = if (isSignUp) onSignUpWithEmail else onSignInWithEmail,
                                 enabled = !state.isLoading && state.email.isNotBlank() && state.password.isNotBlank(),
                                 modifier = Modifier.fillMaxWidth()
                             )
+
+                            if (!state.isEmailVerified && state.currentUser != null) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    Text(
+                                        text = "E-posta adresiniz doğrulanmamış!",
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    TextButton(onClick = onSendEmailVerification) {
+                                        Text(
+                                            text = "Doğrulama E-postası Gönder",
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
 
-                    if (!state.isSignUpMode && isBiometricAvailable) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(1.dp)
-                                    .background(Color.White.copy(alpha = 0.3f))
-                            )
-                            
-                            Text(
-                                text = "VEYA",
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = Color.White.copy(alpha = 0.6f),
-                                    fontWeight = FontWeight.Medium
-                                ),
-                                modifier = Modifier.padding(horizontal = 8.dp)
-                            )
-                            
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(1.dp)
-                                    .background(Color.White.copy(alpha = 0.3f))
-                            )
-                        }
-                        
-                        BiometricButton(
-                            onClick = {
-                                biometricHelper.authenticate(
-                                    title = "Parmak İzi ile Giriş",
-                                    subtitle = "Parmak izinizi kullanarak giriş yapın",
-                                    onSuccess = {
-                                        onSignInWithBiometric()
-                                    },
-                                    onError = { error ->
-                                    }
-                                )
-                            },
-                            enabled = !state.isLoading,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
 
                     TextButton(
                         onClick = onToggleAuthMode,
@@ -275,16 +362,6 @@ private fun AuthScreenContent(
                             text = if (state.isSignUpMode) "Zaten hesabınız var mı? Giriş Yap" else "Hesabınız yok mu? Kayıt Ol",
                             color = Color.White.copy(alpha = 0.8f),
                             style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-
-
-                    state.errorMessage?.let { error ->
-                        Text(
-                            text = error,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(top = 8.dp)
                         )
                     }
 
@@ -298,26 +375,76 @@ private fun AuthScreenContent(
             }
         }
 
-        FloatingSocialIcons(
+        FloatingActionButtons(
             onShowSocialSheet = onShowSocialSheet,
-            enabled = !state.isLoading
-        )
-        
-        if (!state.isSignUpMode && isBiometricAvailable) {
-            BiometricFloatingButton(
-                onClick = {
+            onBiometricClick = {
+                if (!state.isSignUpMode && isBiometricAvailable) {
                     biometricHelper.authenticate(
                         title = "Parmak İzi ile Giriş",
                         subtitle = "Parmak izinizi kullanarak giriş yapın",
                         onSuccess = {
                             onSignInWithBiometric()
                         },
-                        onError = { error ->
-                        }
+                        onError = { }
                     )
-                },
-                enabled = !state.isLoading
-            )
+                }
+            },
+            isBiometricAvailable = !state.isSignUpMode && isBiometricAvailable,
+            enabled = !state.isLoading
+        )
+
+        GlassSheet(
+            visible = state.showForgotPassword,
+            onDismiss = onHideForgotPassword
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
+                Text(
+                    text = "Şifre Sıfırlama",
+                    style = MaterialTheme.typography.headlineSmall.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "E-posta adresinize şifre sıfırlama linki gönderilecektir.",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = Color.White.copy(alpha = 0.7f)
+                    ),
+                    modifier = Modifier.padding(horizontal = 16.dp)
+                )
+
+                GlassTextField(
+                    value = state.email,
+                    onValueChange = onEmailChange,
+                    label = "E-posta",
+                    enabled = !state.isLoading,
+                    leadingIcon = { InputIcons.Email() },
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                GlassmorphicButton(
+                    text = "Gönder",
+                    onClick = { onSendPasswordReset(state.email) },
+                    enabled = !state.isLoading && state.email.isNotBlank(),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                TextButton(onClick = onHideForgotPassword) {
+                    Text(
+                        text = "İptal",
+                        color = Color.White.copy(alpha = 0.8f)
+                    )
+                }
+            }
         }
 
         GlassSheet(
@@ -371,28 +498,133 @@ private fun AuthScreenContent(
 }
 
 @Composable
-private fun FloatingSocialIcons(
+private fun FloatingActionButtons(
     onShowSocialSheet: () -> Unit,
+    onBiometricClick: () -> Unit,
+    isBiometricAvailable: Boolean,
     enabled: Boolean,
     modifier: Modifier = Modifier
 ) {
+    var socialButtonVisible by remember { mutableStateOf(false) }
+    var biometricButtonVisible by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        socialButtonVisible = true
+    }
+
+    LaunchedEffect(isBiometricAvailable) {
+        if (isBiometricAvailable) {
+            delay(200)
+            biometricButtonVisible = true
+        } else {
+            biometricButtonVisible = false
+        }
+    }
+
     Box(modifier = modifier.fillMaxSize()) {
-        FloatingActionButton(
-            onClick = onShowSocialSheet,
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(24.dp),
-            containerColor = GlassButtonStyles.fabContainerColor,
-            shape = GlassButtonStyles.fabShape,
-            elevation = fabButtonElevation()
+                .padding(start = 24.dp, bottom = 80.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Login,
-                contentDescription = "Sosyal Giriş",
-                tint = Color.White,
-                modifier = Modifier.size(28.dp)
-            )
+            AnimatedVisibility(
+                visible = socialButtonVisible,
+                enter = slideInHorizontally(
+                    initialOffsetX = { -it },
+                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(400)) + scaleIn(
+                    initialScale = 0.5f,
+                    animationSpec = tween(400, easing = FastOutSlowInEasing)
+                ),
+                exit = fadeOut() + slideOutHorizontally()
+            ) {
+                PressableFloatingActionButton(
+                    onClick = onShowSocialSheet,
+                    containerColor = GlassButtonStyles.fabContainerColor,
+                    shape = GlassButtonStyles.fabShape,
+                    elevation = fabButtonElevation()
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.AccountCircle,
+                        contentDescription = "Sosyal Giriş",
+                        tint = Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
+            }
+
+            if (isBiometricAvailable) {
+                AnimatedVisibility(
+                    visible = biometricButtonVisible,
+                    enter = slideInHorizontally(
+                        initialOffsetX = { -it },
+                        animationSpec = tween(400, easing = FastOutSlowInEasing)
+                    ) + fadeIn(animationSpec = tween(400)) + scaleIn(
+                        initialScale = 0.5f,
+                        animationSpec = tween(400, easing = FastOutSlowInEasing)
+                    ),
+                    exit = fadeOut() + slideOutHorizontally()
+                ) {
+                    PressableFloatingActionButton(
+                        onClick = onBiometricClick,
+                        containerColor = GlassButtonStyles.fabContainerColor,
+                        shape = GlassButtonStyles.fabShape,
+                        elevation = fabButtonElevation()
+                    ) {
+                        Icon(
+                            imageVector = FingerprintIcon.Default,
+                            contentDescription = "Parmak İzi ile Giriş",
+                            tint = Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun PressableFloatingActionButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    containerColor: Color,
+    shape: Shape,
+    elevation: androidx.compose.material3.FloatingActionButtonElevation,
+    content: @Composable () -> Unit
+) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.9f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "fab_scale"
+    )
+
+    FloatingActionButton(
+        onClick = onClick,
+        modifier = modifier
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = true
+                        tryAwaitRelease()
+                        isPressed = false
+                    }
+                )
+            },
+        containerColor = containerColor,
+        shape = shape,
+        elevation = elevation
+    ) {
+        content()
     }
 }
 
@@ -404,10 +636,34 @@ private fun SocialLoginButton(
     enabled: Boolean,
     modifier: Modifier = Modifier
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "social_button_scale"
+    )
+
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier.height(56.dp),
+        modifier = modifier
+            .height(56.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = true
+                        tryAwaitRelease()
+                        isPressed = false
+                    }
+                )
+            },
         shape = GlassButtonStyles.secondaryShape,
         colors = secondaryButtonColors(),
         elevation = primaryButtonElevation()
@@ -437,68 +693,6 @@ private fun SocialLoginButton(
     }
 }
 
-@Composable
-private fun BiometricButton(
-    onClick: () -> Unit,
-    enabled: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Button(
-        onClick = onClick,
-        enabled = enabled,
-        modifier = modifier
-            .height(56.dp)
-            .glassButtonAlpha(enabled),
-        shape = GlassButtonStyles.secondaryShape,
-        colors = secondaryButtonColors(),
-        elevation = primaryButtonElevation()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            Icon(
-                imageVector = FingerprintIcon.Default,
-                contentDescription = "Parmak İzi ile Giriş",
-                tint = Color.White,
-                modifier = Modifier.size(24.dp)
-            )
-            Text(
-                text = "Parmak İzi ile Giriş",
-                style = MaterialTheme.typography.bodyLarge.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color.White
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun BiometricFloatingButton(
-    onClick: () -> Unit,
-    enabled: Boolean,
-    modifier: Modifier = Modifier
-) {
-    Box(modifier = modifier.fillMaxSize()) {
-        FloatingActionButton(
-            onClick = onClick,
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp),
-            containerColor = GlassButtonStyles.fabContainerColor,
-            shape = GlassButtonStyles.fabShape,
-            elevation = fabButtonElevation()
-        ) {
-            Icon(
-                imageVector = FingerprintIcon.Default,
-                contentDescription = "Parmak İzi ile Giriş",
-                tint = Color.White,
-                modifier = Modifier.size(28.dp)
-            )
-        }
-    }
-}
 
 @Composable
 fun GlassmorphicButton(
@@ -507,12 +701,35 @@ fun GlassmorphicButton(
     enabled: Boolean,
     modifier: Modifier = Modifier
 ) {
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 0.95f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "button_scale"
+    )
+
     Button(
         onClick = onClick,
         enabled = enabled,
         modifier = modifier
             .height(50.dp)
-            .glassButtonAlpha(enabled),
+            .glassButtonAlpha(enabled)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onPress = {
+                        isPressed = true
+                        tryAwaitRelease()
+                        isPressed = false
+                    }
+                )
+            },
         shape = GlassButtonStyles.primaryShape,
         colors = primaryButtonColors(),
         elevation = primaryButtonElevation()
@@ -530,69 +747,7 @@ fun GlassmorphicButton(
 
 @Preview
 @Composable
-private fun AuthScreenPreview() {
-    MaterialTheme(
-        colorScheme = darkColorScheme()
-    ) {
-        AuthScreenContent(
-            state = AuthState(
-                isLoading = false,
-                currentUser = null,
-                errorMessage = null,
-                isSignUpMode = false,
-                email = "",
-                password = ""
-            ),
-            onEmailChange = { },
-            onPasswordChange = { },
-            onSignInWithEmail = { },
-            onSignUpWithEmail = { },
-            onSignInWithGoogle = { },
-            onSignInWithApple = { },
-            onSignInWithBiometric = { },
-            onToggleAuthMode = { },
-            onTogglePasswordVisibility = { },
-            onShowSocialSheet = { },
-            onHideSocialSheet = { },
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun AuthScreenLoadingPreview() {
-    MaterialTheme(
-        colorScheme = darkColorScheme()
-    ) {
-        AuthScreenContent(
-            state = AuthState(
-                isLoading = true,
-                currentUser = null,
-                errorMessage = null,
-                isSignUpMode = false,
-                email = "user@example.com",
-                password = "password"
-            ),
-            onEmailChange = { },
-            onPasswordChange = { },
-            onSignInWithEmail = { },
-            onSignUpWithEmail = { },
-            onSignInWithGoogle = { },
-            onSignInWithApple = { },
-            onSignInWithBiometric = { },
-            onToggleAuthMode = { },
-            onTogglePasswordVisibility = { },
-            onShowSocialSheet = { },
-            onHideSocialSheet = { },
-            modifier = Modifier.fillMaxSize()
-        )
-    }
-}
-
-@Preview
-@Composable
-private fun AuthScreenErrorPreview() {
+fun AuthScreenErrorPreview() {
     MaterialTheme(
         colorScheme = darkColorScheme()
     ) {
@@ -614,8 +769,14 @@ private fun AuthScreenErrorPreview() {
             onSignInWithBiometric = { },
             onToggleAuthMode = { },
             onTogglePasswordVisibility = { },
+            onToggleRememberMe = { },
             onShowSocialSheet = { },
             onHideSocialSheet = { },
+            onShowForgotPassword = { },
+            onHideForgotPassword = { },
+            onSendPasswordReset = { },
+            onSendEmailVerification = { },
+            onClearError = { },
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -623,7 +784,7 @@ private fun AuthScreenErrorPreview() {
 
 @Preview
 @Composable
-private fun AuthScreenSignUpPreview() {
+fun AuthScreenSignUpPreview() {
     MaterialTheme(
         colorScheme = darkColorScheme()
     ) {
@@ -645,8 +806,14 @@ private fun AuthScreenSignUpPreview() {
             onSignInWithBiometric = { },
             onToggleAuthMode = { },
             onTogglePasswordVisibility = { },
+            onToggleRememberMe = { },
             onShowSocialSheet = { },
             onHideSocialSheet = { },
+            onShowForgotPassword = { },
+            onHideForgotPassword = { },
+            onSendPasswordReset = { },
+            onSendEmailVerification = { },
+            onClearError = { },
             modifier = Modifier.fillMaxSize()
         )
     }
@@ -654,7 +821,7 @@ private fun AuthScreenSignUpPreview() {
 
 @Preview
 @Composable
-private fun GlassmorphicButtonPreview() {
+fun GlassmorphicButtonPreview() {
     MaterialTheme(
         colorScheme = darkColorScheme()
     ) {

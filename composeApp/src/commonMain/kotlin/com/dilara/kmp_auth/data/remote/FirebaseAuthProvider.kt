@@ -11,6 +11,9 @@ interface FirebaseAuthProvider {
     suspend fun signOut(): Result<Unit>
     suspend fun getCurrentUser(): User?
     fun observeAuthState(): kotlinx.coroutines.flow.Flow<User?>
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit>
+    suspend fun sendEmailVerification(): Result<Unit>
+    suspend fun isEmailVerified(): Boolean
 }
 
 expect class FirebaseAuthProviderImpl() : FirebaseAuthProvider

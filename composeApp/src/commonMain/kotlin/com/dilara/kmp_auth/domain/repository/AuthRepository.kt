@@ -13,5 +13,8 @@ interface AuthRepository {
     suspend fun signInWithApple(): AuthResult
     suspend fun signOut(): Result<Unit>
     suspend fun getCurrentUser(): User?
+    suspend fun sendPasswordResetEmail(email: String): Result<Unit>
+    suspend fun sendEmailVerification(): Result<Unit>
+    suspend fun isEmailVerified(): Boolean
 }
 

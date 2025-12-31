@@ -10,7 +10,12 @@ sealed class AuthEvent {
     object ClearError : AuthEvent()
     object ToggleAuthMode : AuthEvent()
     object TogglePasswordVisibility : AuthEvent()
+    object ToggleRememberMe : AuthEvent()
     object ShowSocialSheet : AuthEvent()
     object HideSocialSheet : AuthEvent()
+    object ShowForgotPassword : AuthEvent()
+    object HideForgotPassword : AuthEvent()
+    data class SendPasswordReset(val email: String) : AuthEvent()
+    object SendEmailVerification : AuthEvent()
 }
 

@@ -36,5 +36,17 @@ class AuthRepositoryImpl(
     override suspend fun getCurrentUser(): User? {
         return firebaseAuthProvider.getCurrentUser()
     }
+    
+    override suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
+        return firebaseAuthProvider.sendPasswordResetEmail(email)
+    }
+    
+    override suspend fun sendEmailVerification(): Result<Unit> {
+        return firebaseAuthProvider.sendEmailVerification()
+    }
+    
+    override suspend fun isEmailVerified(): Boolean {
+        return firebaseAuthProvider.isEmailVerified()
+    }
 }
 

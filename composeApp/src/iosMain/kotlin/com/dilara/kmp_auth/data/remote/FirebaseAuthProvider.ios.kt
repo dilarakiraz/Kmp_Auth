@@ -4,7 +4,7 @@ import com.dilara.kmp_auth.domain.entity.AuthResult
 import com.dilara.kmp_auth.domain.entity.User
 import kotlinx.coroutines.flow.flowOf
 
-actual class FirebaseAuthProviderImpl actual constructor() : FirebaseAuthProvider {
+actual class FirebaseAuthProviderImpl : FirebaseAuthProvider {
     override suspend fun signInWithEmail(email: String, password: String): AuthResult {
         return AuthResult.Error("Email Sign-In not implemented yet")
     }
@@ -31,6 +31,18 @@ actual class FirebaseAuthProviderImpl actual constructor() : FirebaseAuthProvide
 
     override fun observeAuthState(): kotlinx.coroutines.flow.Flow<User?> {
         return flowOf(null)
+    }
+
+    override suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
+        return Result.failure(Exception("Password reset not implemented yet"))
+    }
+
+    override suspend fun sendEmailVerification(): Result<Unit> {
+        return Result.failure(Exception("Email verification not implemented yet"))
+    }
+
+    override suspend fun isEmailVerified(): Boolean {
+        return false
     }
 }
 

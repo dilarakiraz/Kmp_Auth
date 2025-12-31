@@ -18,4 +18,20 @@
     <!-- Google Sign-In Web Client ID -->
     <!-- Firebase Console > Authentication > Sign-in method > Google > Web client ID -->
     <string name="default_web_client_id">278521168542-drteue7gifnmj7epfbsvj5jccmd02pj6.apps.googleusercontent.com</string>
+    
+    <!-- Error Messages -->
+    <string name="sign_out_failed">Çıkış yapılamadı</string>
+    <string name="email_not_verified">E-posta adresiniz doğrulanmamış. Lütfen e-posta kutunuzu kontrol edin.</string>
+    <string name="signup_success">Kayıt başarılı! E-posta adresinizi doğrulamak için gönderilen e-postayı (spam klasörü dahil) kontrol edin.</string>
+    <string name="password_reset_sent">Şifre sıfırlama e-postası gönderildi. Lütfen e-posta kutunuzu (spam klasörü dahil) kontrol edin.</string>
+    <string name="password_reset_failed">Şifre sıfırlama e-postası gönderilemedi</string>
+    <string name="email_verification_sent">Doğrulama e-postası gönderildi. Lütfen e-posta kutunuzu (spam klasörü dahil) kontrol edin.</string>
+    <string name="email_verification_failed">Doğrulama e-postası gönderilemedi</string>
+    <string name="biometric_login_required">Önce email/şifre ile giriş yapmalısınız</string>
+    <string name="sign_in_failed">Giriş yapılamadı</string>
+    <string name="sign_up_failed">Kayıt olunamadı</string>
+    <string name="user_not_found">Bu e-posta adresi ile kayıtlı bir kullanıcı bulunamadı.</string>
+    <string name="email_send_failed">E-posta gönderilemedi</string>
+    <string name="unknown_error">Bilinmeyen hata</string>
+    <string name="no_user_signed_in">Giriş yapılmış kullanıcı yok</string>
 </resources>

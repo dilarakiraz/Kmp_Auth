@@ -10,6 +10,9 @@ data class AuthState(
     val email: String = "",
     val password: String = "",
     val isPasswordVisible: Boolean = false,
-    val showSocialSheet: Boolean = false
+    val showSocialSheet: Boolean = false,
+    val rememberMe: Boolean = false,
+    val showForgotPassword: Boolean = false,
+    val isEmailVerified: Boolean = true
 )
 
